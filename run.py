@@ -19,7 +19,7 @@ def main():
     parquet_kw_estimates = 'hdfs://dchdpname1-int:8020/parquet/kw_modeling/kw_estimates_by_data_source/sifi_date={0:d}'
     df_parquet = sqlc.read.parquet(parquet_kw_estimates.format(sifi_day_today))
     df_count_ordered = df_parquet.filter(f.col('data_source') == 'bidder_path_keywords')\
-        .filter(f.col('count') > 2)\
+	.filter (f.col ('count') >= 5)\
         .orderBy(f.col('count').desc())\
         .cache()
     df_count_ordered.count()
@@ -27,7 +27,7 @@ def main():
     # keyword md5 and names
     parquet_kw_index = 'hdfs://dchdpname1-int:8020/parquet/kw_modeling/kw_index_by_week/sifi_date={0:d}'
     df_kw = sqlc.read.parquet(parquet_kw_index.format(sifi_day_today))\
-        .filter(f.length(f.col('segment_name')) < 30).cache()
+        .filter(f.length(f.col('segment_name')) < 20).cache()
     df_kw.count()
 
     # Add the keyword names
@@ -39,8 +39,8 @@ def main():
                 f.col('segment_name').alias('keyword_name')).cache()
     df_count_ordered_with_name.count()
     # add dd_id
-    df_final = df_count_ordered_with_name.withColumn('dd_id', f.lit(sifi_day_today))\
-        .select(f.col('dd_id'), f.col('keyword_count'), f.col('keyword_name'), f.col('md5'))
+    df_final = df_count_ordered_with_name.withColumn('sifi_date', f.lit(sifi_day_today))\
+        .select(f.col('sifi_date'), f.col('keyword_count'), f.col('keyword_name'), f.col('md5'))
 
     # Write to Vertica
     SifiVertica(sqlc=sqlc, environment="prod").write_dataframe(df_final.coalesce(8), "top_keywords", schema="adops")
