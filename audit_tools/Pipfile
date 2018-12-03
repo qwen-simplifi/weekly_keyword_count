@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+
+[packages]
+"." = {path = ".", editable = true}
+
+
+[dev-packages]
+wheel = "*"
+pylint = "*"
+coverage = "*"
+Sphinx = "*"
+# Pinned to workaround Artifactory bug: https://www.jfrog.com/jira/browse/RTFACT-16189
+setuptools = "==38.5.2"
+twine = "==1.10.0"
+wheel = "==0.30.0"
+
+pytest = "*"

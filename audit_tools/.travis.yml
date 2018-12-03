@@ -1,0 +1,47 @@
+# Config file for automatic testing at travis-ci.com
+
+
+# Limit builds to specific branches
+branches:
+  only:
+  - master
+- develop
+- /^\d+\.\d+\.\d+$/
+
+language: python
+
+cache:
+  pip: true
+
+python:
+  - 2.7
+  - 3.6
+  - pypy3.5
+
+# command to install dependencies
+install:
+  - travis_retry make init
+
+# command to run tests
+script:
+  - make test
+  - make lint
+- ./ci/test_version.sh
+- make build
+
+# Deploy to sifi Artifactory (only for tags on master)
+#
+# Why are we not using Travis' pypi provider here?
+# Travis forces the upgrade of setuptools to the latest version
+# Artifactory has a bug were the latest version causes 500 errors when you push
+# So, until this bug is addressed, we need to maintain our own script.
+# See: https://www.jfrog.com/jira/browse/RTFACT-16189
+deploy:
+  skip_cleanup: true
+  provider: script
+  script: bash ci/deploy.sh
+  on:
+    tags: true
+    branch: master
+    repo: simplifi/audit_tools
+    python: 2.7
